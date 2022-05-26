@@ -1,0 +1,88 @@
+tf.placeholder(
+    dtype,
+    shape=None,
+    name=None
+)
+参数：
+
+dtype：数据类型。常用的是tf.float32,tf.float64等数值类型
+shape：数据形状。默认是None，就是一维值，也可以是多维（比如[2,3], [None, 3]表示列是3，行不定）
+name：名称
+Tensorflow的设计理念称之为计算流图，在编写程序时，首先构筑整个系统的graph，代码并不会直接生效，这一点和python的其他数值计算库（如Numpy等）不同，
+graph为静态的，类似于docker中的镜像。然后，在实际的运行时，启动一个session，程序才会真正的运行。这样做的好处就是：
+避免反复地切换底层程序实际运行的上下文，tensorflow帮你优化整个系统的代码。我们知道，很多python程序的底层为C语言或者其他语言，
+执行一行脚本，就要切换一次，是有成本的，tensorflow通过计算流图的方式，帮你优化整个session需要执行的代码，还是很有优势的。
+
+所以placeholder()函数是在神经网络构建graph的时候在模型中的占位，此时并没有把要输入的数据传入模型，它只会分配必要的内存。
+等建立session，在会话中，运行模型的时候通过feed_dict()函数向占位符喂入数据。
+
+例：
+
+import tensorflow as tf
+import numpy as np
+
+input1 = tf.placeholder(tf.float32)
+input2 = tf.placeholder(tf.float32)
+
+output = tf.multiply(input1, input2)
+
+with tf.Session() as sess:
+   print sess.run(output, feed_dict = {input1:[3.], input2: [4.]})
+
+import tensorflow as tf
+import numpy as np
+
+x = tf.placeholder(tf.float32, shape=(1024, 1024))
+y = tf.matmul(x, x)
+
+with tf.Session() as sess:
+    #print(sess.run(y))  # ERROR:此处x还没有赋值
+    rand_array = np.random.rand(1024, 1024)
+    print(sess.run(y, feed_dict={x: rand_array}))
+
+tf.placeholder
+此函数的作用可以作为 java 方法中的形参，用于定义过程，在方法执行时再赋予具体的值。
+
+a = tf.placeholder(dtype=tf.float32, shape=None, name='a')
+b = tf.placeholder(dtype=tf.float32, shape=None, name='b')
+with tf.Session() as sess:
+    print(sess.run(a + b, feed_dict={a: 1, b: 2}))
+
+
+import numpy as np
+
+# 定义数据
+a = np.array([10, 15, 20, 25, 30])
+b = np.arange(15).reshape(3, 5)
+
+# 切片操作
+# a[start:end] : 表示返回[start, end)区间范围内的元素
+# start不显示设置，表示从0开始
+# end不显示设置，表示到矩阵或向量最后
+# start、end为负值时，表示逆序，例如-1表示最后一个位置，-2表示倒数第二个位置
+print(a[1:3])
+print(a[1:-1])
+print(a[:3])
+print(a[2:])
+print('\n')
+
+# b[rstart:rend, cstart:cend] :
+# rstart、rend : 表示行的开始位置和结束位置
+# cstart、cend : 表示列的开始位置和结束位置
+# 返回行索引为[rstart, rend)，列索引为[cstart, cend)的数据
+print(b[:, 1])
+print(b[:, 0:2])
+print(b[1:3, 0:2])
+#结果
+
+#[15 20]
+#[15 20 25]
+#[10 15 20]
+#[20 25 30]
+
+#[1  6 11]
+#[[0  1]
+#[5  6]
+#[10 11]]
+#[[5  6]
+#[10 11]]
